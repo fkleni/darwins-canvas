@@ -54,3 +54,7 @@ GRAVITY_CEILING_BY_BODY_SIZE = {
     4: 6.0,
     5: 5.0,
 }
+
+
+# --- Cosmetic mutation ------------------------------------------------
+MUTATION_PRESSURE_CHANCE = 0.6   # chance that an event's push decides the mutation
