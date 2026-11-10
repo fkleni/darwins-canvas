@@ -1,5 +1,7 @@
 """Environmental events and how they change a world."""
 
+import math
+
 from pydantic import BaseModel, field_validator
 
 from app.sim import config
@@ -72,3 +74,60 @@ EVENTS = {
                 "Rivers and lakes dry up across the world.", water=-25.0),
     ]
 }
+
+def parameter_range(name: str) -> tuple[float, float, float]:
+    """(lowest, neutral, highest) value a slider for this parameter can take."""
+    limit = config.PARAMETERS[name]["max_event_change"]
+    if config.PARAMETERS[name]["kind"] == "ratio":
+        return 1 / limit, 1.0, limit
+    return -limit, 0.0, limit
+
+
+def _describe(changes: dict[str, float]) -> str:
+    """A short readable line such as 'gravity x2, temperature -10 C'."""
+    parts = []
+    for name, spec in config.PARAMETERS.items():
+        if name not in changes:
+            continue
+        value = changes[name]
+        if spec["kind"] == "ratio":
+            parts.append(f"{name} x{value:g}")
+        else:
+            parts.append(f"{name} {value:+g}{spec['unit']}")
+    return ", ".join(parts)
+
+
+def custom_event(values: dict[str, float]) -> Event:
+    """Build an event from slider values.
+
+    Ratio parameters take a multiplier (1.0 = unchanged), linear ones an amount
+    (0 = unchanged). Unchanged sliders are dropped. Raises ValueError for unknown
+    parameters, non-finite numbers, values outside the slider range, or when
+    nothing changes at all.
+    """
+    unknown = set(values) - set(config.PARAMETERS)
+    if unknown:
+        raise ValueError(f"unknown world parameters: {sorted(unknown)}")
+
+    tolerance = 1e-6
+    changes: dict[str, float] = {}
+    for name in config.PARAMETERS:
+        if name not in values:
+            continue
+        value = values[name]
+        if not math.isfinite(value):
+            raise ValueError(f"{name} must be a finite number")
+        low, neutral, high = parameter_range(name)
+        if not low - tolerance <= value <= high + tolerance:
+            raise ValueError(f"{name} must be between {low:g} and {high:g}")
+        if abs(value - neutral) > tolerance:
+            changes[name] = value
+
+    if not changes:
+        raise ValueError("an event must change at least one parameter")
+    return Event(
+        id="custom",
+        label="Custom event",
+        description=_describe(changes),
+        changes=changes,
+    )

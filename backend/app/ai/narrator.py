@@ -13,8 +13,6 @@ from app.sim.models import Creature, Status, WorldState
 THRIVING_SCORE = 80  # from this score up the story calls the creature thriving
 COPING_SCORE = 50  # from here up it is coping; below it struggles
 
-UNITS = {"gravity": "x", "radiation": "x", "temperature": " C", "oxygen": "%", "water": "%"}
-
 STATUS_INSTRUCTIONS = {
     Status.ALIVE: "The creature lives on. Describe how this step helped it cope.",
     Status.CRITICAL: "The creature survives for now but is in grave danger. Make the story tense.",
@@ -45,8 +43,9 @@ eyes or fingers.
 
 
 def _format_value(name: str, value: float) -> str:
-    digits = 2 if config.PARAMETERS[name]["kind"] == "ratio" else 0
-    return f"{value:.{digits}f}{UNITS[name]}"
+    spec = config.PARAMETERS[name]
+    digits = 2 if spec["kind"] == "ratio" else 0
+    return f"{value:.{digits}f}{spec['unit']}"
 
 
 def _world_line(world: WorldState) -> str:

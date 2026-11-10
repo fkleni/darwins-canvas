@@ -16,26 +16,27 @@ never the rules. Values are first guesses and will be tuned in Phase 5.
 # max_event_change: the most one single event may change this parameter.
 #                For "ratio" a multiplier (3.0 means x3 or /3), for "linear" +/- amount.
 # min, max:      the lowest and highest value the world can ever have.
+# unit:          text appended to a value when we show it.
 PARAMETERS = {
     "gravity": {
         "kind": "ratio", "baseline": 1.0, "max_shift": 1.6,
-        "max_event_change": 3.0, "min": 0.1, "max": 50.0,
+        "max_event_change": 3.0, "min": 0.1, "max": 50.0, "unit": "x",
     },
     "radiation": {
         "kind": "ratio", "baseline": 1.0, "max_shift": 1.6,
-        "max_event_change": 3.0, "min": 0.1, "max": 50.0,
+        "max_event_change": 3.0, "min": 0.1, "max": 50.0, "unit": "x",
     },
     "temperature": {
         "kind": "linear", "baseline": 15.0, "max_shift": 8.0, "scale": 12.0,
-        "max_event_change": 25.0, "min": -100.0, "max": 150.0,
+        "max_event_change": 25.0, "min": -100.0, "max": 150.0, "unit": " C",
     },
     "oxygen": {
         "kind": "linear", "baseline": 21.0, "max_shift": 4.0, "scale": 6.0,
-        "max_event_change": 8.0, "min": 0.0, "max": 100.0,
+        "max_event_change": 8.0, "min": 0.0, "max": 100.0, "unit": "%",
     },
     "water": {
         "kind": "linear", "baseline": 70.0, "max_shift": 15.0, "scale": 25.0,
-        "max_event_change": 30.0, "min": 0.0, "max": 100.0,
+        "max_event_change": 30.0, "min": 0.0, "max": 100.0, "unit": "%",
     },
 }
 
