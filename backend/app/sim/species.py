@@ -15,6 +15,7 @@ class Species(BaseModel):
     body_size: int = Field(ge=1, le=5)
     appearance: Appearance
     base_traits: tuple[str, ...] = ()
+    visual_description: str = ""
 
     def founder(self) -> Creature:
         """The root of a lineage: depth 0, perfectly tuned to the starting planet."""
@@ -43,6 +44,9 @@ SPECIES = {
                 "large complex brain",
                 "dexterous grasping hands",
                 "mostly hairless skin",
+            ),
+            visual_description=(
+                "an adult human standing upright in a neutral pose, plain simple clothing"
             ),
         ),
     ]
