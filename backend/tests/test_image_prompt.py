@@ -4,13 +4,16 @@ import pytest
 from pydantic import ValidationError
 
 from app.ai.image_prompt import (
+    COVERING,
     FOSSIL_STYLE,
     IMAGE_SIZE,
+    STRICT_COVERING,
     STYLE,
     appearance_phrase,
     build_founder_image_request,
     build_image_request,
     lineage_seed,
+    retry_request,
     scrub_counts,
 )
 from app.ai.schemas import Narration
@@ -78,7 +81,9 @@ def test_the_prompt_uses_the_look_decided_by_the_simulation():
 
 
 def test_the_prompt_carries_the_visual_notes_without_counts():
-    request = build_image_request(narration("Six thick legs and a long tail."), child_after(1), "Human", seed=1)
+    request = build_image_request(
+        narration("Six thick legs and a long tail."), child_after(1), "Human", seed=1
+    )
     assert "thick legs and a long tail" in request.prompt
     assert "Six" not in request.prompt
 
@@ -89,6 +94,16 @@ def test_an_extinct_creature_is_drawn_as_a_fossil_without_skin_colour():
     request = build_image_request(narration(), child, "Human", seed=1)
     assert request.prompt.startswith(FOSSIL_STYLE)
     assert appearance_phrase(child.appearance) not in request.prompt
+
+
+def test_a_living_descendant_is_always_described_as_covered():
+    request = build_image_request(narration(), child_after(1), "Human", seed=1)
+    assert COVERING in request.prompt
+
+
+def test_a_fossil_prompt_has_no_covering_clause():
+    request = build_image_request(narration(), child_after(3), "Human", seed=1)
+    assert COVERING not in request.prompt
 
 
 def test_even_the_longest_notes_keep_the_prompt_short_enough_for_a_url():
@@ -132,3 +147,31 @@ def test_an_image_request_is_read_only():
     request = build_founder_image_request(HUMAN, seed=1)
     with pytest.raises(ValidationError):
         request.seed = 2
+
+
+def test_a_retry_request_has_a_new_seed_and_a_stricter_covering():
+    original = build_founder_image_request(HUMAN, seed=10)
+    retry = retry_request(original, attempt=2)
+    assert retry.seed != original.seed
+    assert retry.prompt.startswith(original.prompt)
+    assert STRICT_COVERING in retry.prompt
+
+
+def test_a_retry_request_leaves_the_original_untouched():
+    original = build_founder_image_request(HUMAN, seed=10)
+    before = original.model_dump()
+    retry_request(original, attempt=2)
+    assert original.model_dump() == before
+
+
+def test_retry_seeds_differ_by_attempt_and_stay_in_range():
+    original = build_founder_image_request(HUMAN, seed=2**31 - 2)
+    seeds = {retry_request(original, attempt).seed for attempt in (2, 3)}
+    assert len(seeds) == 2
+    assert all(0 <= seed < 2**31 for seed in seeds)
+
+
+def test_even_a_retry_prompt_stays_short_enough_for_a_url():
+    notes = " ".join(["stocky"] * 40)[:200]
+    request = build_image_request(narration(notes), child_after(1), "Human", seed=1)
+    assert len(retry_request(request, attempt=3).prompt) < 800

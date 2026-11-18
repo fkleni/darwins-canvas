@@ -21,13 +21,12 @@ def _repair_prompt(original: str, error: LLMInvalidOutputError) -> str:
     )
 
 
-def generate_with_retry[T: BaseModel](
-    provider: LLMProvider,
+def call_with_retry[R](
+    operation: Callable[[str], R],
     prompt: str,
-    schema: type[T],
     sleep: Callable[[float], None] = time.sleep,
-) -> T:
-    """Ask the model, retrying only the failures that retrying can fix.
+) -> R:
+    """Run operation(prompt), retrying only the failures that retrying can fix.
 
     Invalid output: ask again, showing the model its mistake.
     Unavailable:    wait (1s, 2s, ...) and ask again.
@@ -36,7 +35,7 @@ def generate_with_retry[T: BaseModel](
     current_prompt = prompt
     for attempt in range(1, MAX_ATTEMPTS + 1):
         try:
-            return provider.generate(current_prompt, schema)
+            return operation(current_prompt)
         except LLMInvalidOutputError as error:
             if attempt == MAX_ATTEMPTS:
                 raise
@@ -46,3 +45,13 @@ def generate_with_retry[T: BaseModel](
                 raise
             sleep(BASE_DELAY * 2 ** (attempt - 1))
     raise AssertionError("unreachable: the last attempt always returns or raises")
+
+
+def generate_with_retry[T: BaseModel](
+    provider: LLMProvider,
+    prompt: str,
+    schema: type[T],
+    sleep: Callable[[float], None] = time.sleep,
+) -> T:
+    """Ask a text provider, retrying the failures that can be fixed."""
+    return call_with_retry(lambda current: provider.generate(current, schema), prompt, sleep)

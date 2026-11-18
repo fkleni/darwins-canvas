@@ -11,11 +11,15 @@ from app.sim.models import Creature, Status
 from app.sim.species import Species
 
 IMAGE_SIZE = 768
+MAX_SEED = 2_147_483_647  # the biggest seed every image service accepts
 
 STYLE = (
-    "naturalist field-guide illustration of a single creature, full body, centered, "
-    "detailed scientific plate, plain dark neutral background, soft studio lighting"
+    "family-friendly naturalist field-guide illustration of a single creature, "
+    "ink and watercolor plate, full body, centered, plain dark neutral background, "
+    "soft studio lighting"
 )
+COVERING = "body covered in thick textured hide"
+STRICT_COVERING = "body fully covered by thick hide and a long loose cloak"
 FOSSIL_STYLE = (
     "naturalist field-guide illustration of a single fossil skeleton specimen, "
     "bleached bones, centered, museum plate, plain dark neutral background, "
@@ -71,7 +75,7 @@ def lineage_seed(lineage_id: str) -> int:
     hashlib, not hash(): Python's built-in hash() of a string changes on every run.
     """
     digest = hashlib.sha256(lineage_id.encode("utf-8")).digest()
-    return int.from_bytes(digest[:4], "big") % 2_147_483_647
+    return int.from_bytes(digest[:4], "big") % MAX_SEED
 
 
 def build_image_request(
@@ -79,12 +83,12 @@ def build_image_request(
 ) -> ImageRequest:
     """The picture request for an evolved creature."""
     if creature.status == Status.EXTINCT:
-        style, look = FOSSIL_STYLE, []  # bones have no skin colour
+        style, extras = FOSSIL_STYLE, []  # bones have no skin colour and need no covering
     else:
-        style, look = STYLE, [appearance_phrase(creature.appearance)]
+        style, extras = STYLE, [appearance_phrase(creature.appearance), COVERING]
     subject = f"a speculative creature evolved from {origin.lower()} ancestors"
     notes = scrub_counts(narration.visual_notes).rstrip(" .")
-    return ImageRequest(prompt=", ".join([style, subject, *look, notes]), seed=seed)
+    return ImageRequest(prompt=", ".join([style, subject, *extras, notes]), seed=seed)
 
 
 def build_founder_image_request(species: Species, seed: int) -> ImageRequest:
@@ -93,3 +97,13 @@ def build_founder_image_request(species: Species, seed: int) -> ImageRequest:
         raise ValueError(f"{species.name} has no visual_description")
     parts = [STYLE, species.visual_description, appearance_phrase(species.appearance)]
     return ImageRequest(prompt=", ".join(parts), seed=seed)
+
+
+def retry_request(request: ImageRequest, attempt: int) -> ImageRequest:
+    """The request for another try after a rejected picture: a new seed, a stricter covering."""
+    return request.model_copy(
+        update={
+            "seed": (request.seed + attempt) % MAX_SEED,
+            "prompt": f"{request.prompt}, {STRICT_COVERING}",
+        }
+    )
