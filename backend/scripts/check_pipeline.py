@@ -35,14 +35,14 @@ from app.ai.safety import SafeImageService  # noqa: E402
 from app.sim.events import EVENTS  # noqa: E402
 from app.sim.evolve import evolve  # noqa: E402
 from app.sim.models import Status  # noqa: E402
-from app.sim.species import SPECIES  # noqa: E402
+from app.sim.species import DEFAULT_SPECIES  # noqa: E402
 
 OUTPUT = Path("scratch_pipeline")
 EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
 
 service = SafeImageService(ImageCache(OUTPUT / "cache"), PollinationsClient(), GeminiImageInspector())
 provider = GeminiProvider()
-species = SPECIES["human"]
+species = DEFAULT_SPECIES
 seed = lineage_seed("demo-lineage")
 rng = random.Random(1)
 
@@ -74,9 +74,7 @@ for number, event_id in enumerate(("great_flood", "ice_age", "heavy_gravity"), s
     except LLMError as error:
         print(f"{type(error).__name__}: {error}")
         break
-    print(
-        f"{event.label}: score {child.score:.0f}, {child.status.value} -> {narration.name}"
-    )
+    print(f"{event.label}: score {child.score:.0f}, {child.status.value} -> {narration.name}")
     label = f"{number}_{event_id}_{child.status.value}"
     print(report(label, build_image_request(narration, child, species.name, seed)))
     creature = child.model_copy(update={"name": narration.name})

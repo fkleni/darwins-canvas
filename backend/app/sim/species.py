@@ -2,9 +2,8 @@
 
 from pydantic import BaseModel, Field
 
-from app.sim.models import Creature, WorldState
-
 from app.sim.appearance import Appearance
+from app.sim.models import Creature, WorldState
 
 
 class Species(BaseModel):
@@ -34,22 +33,25 @@ SPECIES = {
     s.id: s
     for s in [
         Species(
-            id="human",
-            name="Human",
+            id="gray_wolf",
+            name="Gray Wolf",
             body_size=4,
             appearance=Appearance(
-                skin_color="tan", eye_color="brown", eye_size="medium", pattern="none"),
+                skin_color="slate", eye_color="amber", eye_size="medium", pattern="none"
+            ),
             base_traits=(
-                "upright bipedal posture",
-                "large complex brain",
-                "dexterous grasping hands",
-                "mostly hairless skin",
+                "four-legged running stance",
+                "keen sense of smell",
+                "thick double-layered fur",
+                "strong jaws and sharp teeth",
             ),
             visual_description=(
-                "an adult human standing upright in a neutral pose, plain simple clothing"
+                "an adult gray wolf standing alert on all fours, long legs, "
+                "lean athletic build, seen from the side"
             ),
         ),
     ]
 }
 
-DEFAULT_SPECIES_ID = "human"
+DEFAULT_SPECIES_ID = "gray_wolf"
+DEFAULT_SPECIES = SPECIES[DEFAULT_SPECIES_ID]

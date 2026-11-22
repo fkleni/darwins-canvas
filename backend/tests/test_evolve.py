@@ -6,11 +6,11 @@ from app.sim import config
 from app.sim.events import EVENTS, Event
 from app.sim.evolve import ExtinctLineageError, evolve
 from app.sim.models import Status
-from app.sim.species import SPECIES
+from app.sim.species import DEFAULT_SPECIES
 
 
 def founder():
-    return SPECIES["human"].founder()
+    return DEFAULT_SPECIES.founder()
 
 
 def run_chain(event_id, steps, seed=0):
@@ -23,8 +23,8 @@ def run_chain(event_id, steps, seed=0):
     return chain
 
 
-# Design test: relies on gravity x2 per event and the human ceiling in config.
-def test_doubling_gravity_kills_humans_by_the_third_evolution():
+# Design test: relies on gravity x2 per event and the body size 4 ceiling in config.
+def test_doubling_gravity_kills_the_founder_species_by_the_third_evolution():
     first, second, third = run_chain("heavy_gravity", 3)
     assert [first.status, second.status, third.status] == [
         Status.ALIVE,

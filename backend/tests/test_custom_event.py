@@ -7,7 +7,7 @@ from app.sim import config
 from app.sim.events import EVENTS, apply_event, custom_event, parameter_range
 from app.sim.evolve import evolve
 from app.sim.models import WorldState
-from app.sim.species import SPECIES
+from app.sim.species import DEFAULT_SPECIES
 
 
 def test_the_gravity_slider_runs_from_a_third_to_triple():
@@ -73,7 +73,7 @@ def test_a_custom_event_changes_the_world_like_any_other_event():
 
 
 def test_a_custom_event_can_drive_an_evolution_step():
-    child = evolve(SPECIES["human"].founder(), custom_event({"gravity": 2.0}), random.Random(0))
+    child = evolve(DEFAULT_SPECIES.founder(), custom_event({"gravity": 2.0}), random.Random(0))
     assert child.depth == 1
     assert round(child.score) == 94
 

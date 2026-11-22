@@ -3,7 +3,7 @@ from pydantic import ValidationError
 
 from app.sim import config
 from app.sim.models import Creature, WorldState
-from app.sim.species import SPECIES
+from app.sim.species import DEFAULT_SPECIES
 
 
 def test_baseline_world_matches_config():
@@ -13,7 +13,7 @@ def test_baseline_world_matches_config():
 
 
 def test_creature_rejects_a_body_size_outside_1_to_5():
-    data = SPECIES["human"].founder().model_dump()
+    data = DEFAULT_SPECIES.founder().model_dump()
     data["body_size"] = 9
     with pytest.raises(ValidationError):
         Creature.model_validate(data)

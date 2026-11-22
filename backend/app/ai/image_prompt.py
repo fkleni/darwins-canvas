@@ -14,17 +14,16 @@ IMAGE_SIZE = 768
 MAX_SEED = 2_147_483_647  # the biggest seed every image service accepts
 
 STYLE = (
-    "family-friendly naturalist field-guide illustration of a single creature, "
-    "ink and watercolor plate, full body, centered, plain dark neutral background, "
+    "family-friendly naturalist field-guide illustration of a single adult animal, "
+    "full body side view, ink and watercolor plate, centered, plain dark neutral background, "
     "soft studio lighting"
 )
-COVERING = "body covered in thick textured hide"
-STRICT_COVERING = "body fully covered by thick hide and a long loose cloak"
 FOSSIL_STYLE = (
     "naturalist field-guide illustration of a single fossil skeleton specimen, "
     "bleached bones, centered, museum plate, plain dark neutral background, "
     "soft studio lighting"
 )
+RETRY_HINT = "natural history museum specimen illustration of one animal"
 
 _COUNT = r"(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twin|dual|double|triple|single)"
 _PART = r"(?:limbs?|legs?|arms?|eyes?|fingers?|toes?|digits?|heads?|tails?|wings?|horns?|tentacles?|ears?|antennae|claws?)"
@@ -64,9 +63,9 @@ def scrub_counts(text: str) -> str:
 
 def appearance_phrase(appearance: Appearance) -> str:
     """The cosmetic look, in plain words an image model understands."""
-    skin = appearance.skin_color.replace("_", " ")
+    color = appearance.skin_color.replace("_", " ")
     eyes = f"{_EYE_SIZE[appearance.eye_size]}{appearance.eye_color} eyes"
-    return f"{skin} skin, {eyes}, {_PATTERN[appearance.pattern]}"
+    return f"{color} fur, {eyes}, {_PATTERN[appearance.pattern]}"
 
 
 def lineage_seed(lineage_id: str) -> int:
@@ -83,10 +82,10 @@ def build_image_request(
 ) -> ImageRequest:
     """The picture request for an evolved creature."""
     if creature.status == Status.EXTINCT:
-        style, extras = FOSSIL_STYLE, []  # bones have no skin colour and need no covering
+        style, extras = FOSSIL_STYLE, []  # bones have no fur colour
     else:
-        style, extras = STYLE, [appearance_phrase(creature.appearance), COVERING]
-    subject = f"a speculative creature evolved from {origin.lower()} ancestors"
+        style, extras = STYLE, [appearance_phrase(creature.appearance)]
+    subject = f"a speculative adult animal evolved from {origin.lower()} ancestors"
     notes = scrub_counts(narration.visual_notes).rstrip(" .")
     return ImageRequest(prompt=", ".join([style, subject, *extras, notes]), seed=seed)
 
@@ -100,10 +99,10 @@ def build_founder_image_request(species: Species, seed: int) -> ImageRequest:
 
 
 def retry_request(request: ImageRequest, attempt: int) -> ImageRequest:
-    """The request for another try after a rejected picture: a new seed, a stricter covering."""
+    """The request for another try after a rejected picture: a new seed and a stricter hint."""
     return request.model_copy(
         update={
             "seed": (request.seed + attempt) % MAX_SEED,
-            "prompt": f"{request.prompt}, {STRICT_COVERING}",
+            "prompt": f"{request.prompt}, {RETRY_HINT}",
         }
     )

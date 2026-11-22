@@ -10,13 +10,13 @@ from app.ai.lineage import (
     merge_traits,
 )
 from app.ai.schemas import Narration
-from app.sim.species import SPECIES
+from app.sim.species import DEFAULT_SPECIES
 
 
 def narration(name="Frostback Walker", traits=("thick fat layer", "broad snow-gripping feet")):
     return Narration(
         name=name,
-        description="A stocky biped that roams the ice plains in small packs.",
+        description="A stocky predator that roams the ice plains in small packs.",
         traits=list(traits),
         visual_notes="Broad shoulders, heavy fur coat, low rounded ears.",
         story="When the ice came, only the stockiest survivors kept their warmth.",
@@ -40,16 +40,16 @@ def test_merge_traits_keeps_the_newest_when_over_the_cap():
 
 
 def test_a_founder_starts_from_the_species_name_and_base_traits():
-    human = SPECIES["human"]
-    chronicle = founder_chronicle(human)
-    assert chronicle.name == human.name
-    assert chronicle.origin == human.name
-    assert chronicle.traits == human.base_traits
+    species = DEFAULT_SPECIES
+    chronicle = founder_chronicle(species)
+    assert chronicle.name == species.name
+    assert chronicle.origin == species.name
+    assert chronicle.traits == species.base_traits
     assert chronicle.recent_events == ()
 
 
 def test_a_descendant_inherits_traits_and_remembers_the_event():
-    parent = founder_chronicle(SPECIES["human"])
+    parent = founder_chronicle(DEFAULT_SPECIES)
     child = descend(parent, narration(), "Ice Age")
     assert child.name == "Frostback Walker"
     assert set(parent.traits) <= set(child.traits)
@@ -58,14 +58,14 @@ def test_a_descendant_inherits_traits_and_remembers_the_event():
 
 
 def test_a_descendant_keeps_the_origin_of_the_lineage():
-    parent = founder_chronicle(SPECIES["human"])
+    parent = founder_chronicle(DEFAULT_SPECIES)
     child = descend(parent, narration(), "Ice Age")
     grandchild = descend(child, narration(name="Second Form"), "Heavy Gravity")
-    assert grandchild.origin == "Human"
+    assert grandchild.origin == DEFAULT_SPECIES.name
 
 
 def test_only_the_most_recent_events_are_remembered():
-    chronicle = founder_chronicle(SPECIES["human"])
+    chronicle = founder_chronicle(DEFAULT_SPECIES)
     labels = [f"Event {i}" for i in range(RECENT_EVENTS + 2)]
     for label in labels:
         chronicle = descend(chronicle, narration(), label)
@@ -73,13 +73,13 @@ def test_only_the_most_recent_events_are_remembered():
 
 
 def test_history_text_for_a_founder_says_nothing_happened_yet():
-    text = history_text(founder_chronicle(SPECIES["human"]))
+    text = history_text(founder_chronicle(DEFAULT_SPECIES))
     assert "none yet" in text
-    assert "Human" in text
+    assert DEFAULT_SPECIES.name in text
 
 
 def test_history_text_lists_events_oldest_first():
-    chronicle = founder_chronicle(SPECIES["human"])
+    chronicle = founder_chronicle(DEFAULT_SPECIES)
     chronicle = descend(chronicle, narration(), "Heavy Gravity")
     chronicle = descend(chronicle, narration(name="Second Form"), "Ice Age")
     text = history_text(chronicle)
@@ -88,6 +88,6 @@ def test_history_text_lists_events_oldest_first():
 
 
 def test_a_chronicle_is_read_only():
-    chronicle = founder_chronicle(SPECIES["human"])
+    chronicle = founder_chronicle(DEFAULT_SPECIES)
     with pytest.raises(ValidationError):
         chronicle.name = "Somebody Else"

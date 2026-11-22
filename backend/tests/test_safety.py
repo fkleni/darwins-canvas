@@ -4,7 +4,7 @@ import pytest
 
 from app.ai.fake import FakeInspector
 from app.ai.image_cache import GeneratedImage, ImageCache, cache_key
-from app.ai.image_prompt import STRICT_COVERING, ImageRequest
+from app.ai.image_prompt import RETRY_HINT, ImageRequest
 from app.ai.pollinations import ImageUnavailableError
 from app.ai.provider import LLMError, LLMInvalidOutputError, LLMQuotaError, LLMUnavailableError
 from app.ai.safety import (
@@ -109,7 +109,7 @@ def test_a_rejected_picture_is_replaced_by_a_new_attempt_and_never_cached(tmp_pa
     first, second = downloader.requests
     assert first == REQUEST
     assert second.seed != REQUEST.seed
-    assert STRICT_COVERING in second.prompt
+    assert RETRY_HINT in second.prompt
     assert cache.get(cache_key(REQUEST, "flux")) == IMAGE
 
 

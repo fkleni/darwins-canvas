@@ -16,11 +16,11 @@ from app.ai.provider import LLMError  # noqa: E402
 from app.sim.events import EVENTS  # noqa: E402
 from app.sim.evolve import evolve  # noqa: E402
 from app.sim.models import Status  # noqa: E402
-from app.sim.species import SPECIES  # noqa: E402
+from app.sim.species import DEFAULT_SPECIES  # noqa: E402
 
 provider = GeminiProvider()
 rng = random.Random(1)
-species = SPECIES["human"]
+species = DEFAULT_SPECIES
 creature = species.founder()
 chronicle = founder_chronicle(species)
 
