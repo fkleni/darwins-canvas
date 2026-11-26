@@ -105,4 +105,4 @@ def retry_request(request: ImageRequest, attempt: int) -> ImageRequest:
             "seed": (request.seed + attempt) % MAX_SEED,
             "prompt": f"{request.prompt}, {RETRY_HINT}",
         }
-    )
+    ) 
