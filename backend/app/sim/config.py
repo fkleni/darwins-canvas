@@ -56,6 +56,11 @@ GRAVITY_CEILING_BY_BODY_SIZE = {
     5: 5.0,
 }
 
-
 # --- Cosmetic mutation ------------------------------------------------
 MUTATION_PRESSURE_CHANCE = 0.6   # chance that an event's push decides the mutation
+
+# --- Picture selection ------------------------------------------------
+# An adaptation counts for the picture once the body has moved this far from the
+# baseline: ln(ratio) for ratio parameters, amount / scale for linear ones.
+FORM_THRESHOLD = 0.3
+FORM_MAX_DIRECTIONS = 2          # a picture can show at most two adaptations

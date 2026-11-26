@@ -16,9 +16,8 @@ from app.sim.species import DEFAULT_SPECIES
 def narration(name="Frostback Walker", traits=("thick fat layer", "broad snow-gripping feet")):
     return Narration(
         name=name,
-        description="A stocky predator that roams the ice plains in small packs.",
+        description="A stocky biped that roams the ice plains in small packs.",
         traits=list(traits),
-        visual_notes="Broad shoulders, heavy fur coat, low rounded ears.",
         story="When the ice came, only the stockiest survivors kept their warmth.",
     )
 

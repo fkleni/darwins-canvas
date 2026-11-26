@@ -9,7 +9,6 @@ def narration_data(**overrides):
         "name": "Frostback Walker",
         "description": "A stocky biped that roams the ice plains in small packs.",
         "traits": ["thick insulating fat", "broad snow-gripping feet"],
-        "visual_notes": "Broad shoulders, heavy fur coat, low rounded ears.",
         "story": "When the ice came, only the stockiest survivors kept their warmth.",
     }
     data.update(overrides)
@@ -62,6 +61,10 @@ def test_a_trait_must_be_a_short_phrase(bad_trait):
 def test_every_field_carries_a_description_for_the_model(model):
     missing = [name for name, field in model.model_fields.items() if not field.description]
     assert missing == []
+
+
+def test_a_narration_has_no_visual_notes_because_the_pictures_are_fixed():
+    assert "visual_notes" not in Narration.model_fields
 
 
 # --- ParameterChange --------------------------------------------------

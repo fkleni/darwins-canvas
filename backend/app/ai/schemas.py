@@ -8,8 +8,8 @@ from app.sim import config
 class Narration(BaseModel):
     """The story side of a new creature.
 
-    Score, status and extinction are NOT here on purpose: the simulation owns
-    the numbers, the model only tells the story around them.
+    Score, status, extinction and the picture are NOT here on purpose: the simulation
+    owns the numbers and the card picture is chosen from a fixed library.
     """
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -27,14 +27,9 @@ class Narration(BaseModel):
     traits: list[str] = Field(
         min_length=2,
         max_length=4,
-        description="Two to four adaptive physical traits, each a short phrase.",
-    )
-    visual_notes: str = Field(
-        min_length=10,
-        max_length=200,
         description=(
-            "Concrete visible features for an illustrator: shape, posture, texture. "
-            "Never count limbs, eyes or fingers."
+            "Two to four adaptive traits, each a short phrase about anatomy or physiology. "
+            "Never mention colours."
         ),
     )
     story: str = Field(

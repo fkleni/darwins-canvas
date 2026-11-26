@@ -1,0 +1,14 @@
+{
+  "base": "an unaltered modern human standing upright with relaxed arms, pale muted skin and a plain grey waist wrap",
+  "extinct": "the mummified, half-petrified remains of a post-human curled in darkness, with papery ash-grey skin stretched over bone and crumbling into dust",
+  "gravity_up": "a short, squat, wide body with dense pillar-like legs, broad flat feet, a thick muscular neck and a barrel torso",
+  "gravity_down": "a very tall, slender body with elongated light limbs, a narrow ribcage and long fragile fingers",
+  "radiation_up": "a hairless body covered in thick, charcoal-grey leathery dermal armor with keratin ridges, an enlarged bony cranial dome and tiny recessed eyes behind heavy protective lids",
+  "radiation_down": "very pale translucent skin, enlarged dark eyes, a thin slim body and almost no hair",
+  "temperature_up": "a lean body with elongated limbs, oversized thin ears that shed heat and sleek, sparsely haired skin",
+  "temperature_down": "a stocky body with thick insulating fat, dense pale fur, small ears and a broad flat face",
+  "oxygen_up": "an oversized, robust frame with large strong limbs, glossy skin and a powerful ribcage",
+  "oxygen_down": "an enormous barrel chest, flared nostrils, a heavy slow posture and bluish-tinged skin",
+  "water_up": "a smooth, hairless, streamlined body with webbed hands and feet and gill-like slits on the neck",
+  "water_down": "a wiry, lean body with thick cracked leathery skin, slit-like nostrils, deep skin folds and sunken eyes"
+}
