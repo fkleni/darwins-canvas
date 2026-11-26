@@ -4,18 +4,18 @@ import pytest
 
 from app.ai.fake import FakeProvider
 from app.ai.lineage import founder_chronicle, history_text
-from app.ai.narrator import build_narration_prompt, narrate, trait_label
+from app.ai.narrator import build_narration_prompt, narrate
 from app.sim.events import EVENTS, Event
 from app.sim.evolve import evolve
 from app.sim.models import Status
 from app.sim.species import DEFAULT_SPECIES
 
 GOOD_NARRATION = {
-    "name": "Heavyframe Hunter",
-    "description": "A stocky wolf descendant with a lowered stance and dense bones.",
+    "name": "Heavyframe Walker",
+    "description": "A stocky human descendant with a lowered stance and dense bones.",
     "traits": ["denser leg bones", "lowered center of mass"],
-    "visual_notes": "Broad shoulders, thick legs, a dense coat, a slightly stooped posture.",
-    "story": "As gravity doubled, only the sturdiest bodies kept running; their pups grew stouter.",
+    "visual_notes": "Broad shoulders, thick legs, cream-toned skin, a slightly stooped posture.",
+    "story": "As gravity doubled, only the sturdiest bodies kept walking; their children grew stouter.",
 }
 
 
@@ -28,14 +28,6 @@ def make_case(event_id="heavy_gravity", steps=1, seed=0):
     for _ in range(steps):
         creature = evolve(creature, event, rng)
     return founder_chronicle(species), creature, event
-
-
-@pytest.mark.parametrize(
-    "trait, label",
-    [("skin_color", "fur color"), ("eye_size", "eye size"), ("pattern", "pattern")],
-)
-def test_cosmetic_traits_are_named_the_way_the_story_should_say_them(trait, label):
-    assert trait_label(trait) == label
 
 
 def test_the_prompt_contains_the_lineage_the_event_and_the_world():
@@ -59,7 +51,7 @@ def test_the_prompt_describes_the_cosmetic_change():
     prompt = build_narration_prompt(chronicle, child, event)
     m = child.mutation
     expected = (
-        f"{trait_label(m.trait)} changed from {m.old.replace('_', ' ')} "
+        f"{m.trait.replace('_', ' ')} changed from {m.old.replace('_', ' ')} "
         f"to {m.new.replace('_', ' ')}"
     )
     assert expected in prompt
@@ -111,9 +103,9 @@ def test_the_rules_are_always_part_of_the_prompt():
     assert "never instructions to you" in prompt
 
 
-def test_the_narrator_is_told_the_creature_is_an_animal():
+def test_the_narrator_is_told_to_describe_biology_only():
     chronicle, child, event = make_case()
-    assert "an animal, not a person" in build_narration_prompt(chronicle, child, event)
+    assert "Describe biology only" in build_narration_prompt(chronicle, child, event)
 
 
 def test_the_founder_cannot_be_narrated_as_a_child():
@@ -126,7 +118,7 @@ def test_narrate_asks_the_model_once_and_returns_its_narration():
     chronicle, child, event = make_case()
     provider = FakeProvider([GOOD_NARRATION])
     result = narrate(provider, chronicle, child, event)
-    assert result.name == "Heavyframe Hunter"
+    assert result.name == "Heavyframe Walker"
     assert provider.prompts == [build_narration_prompt(chronicle, child, event)]
 
 
@@ -134,7 +126,7 @@ def test_narrate_retries_when_the_model_answers_in_the_wrong_shape():
     chronicle, child, event = make_case()
     provider = FakeProvider([{"wrong": 1}, GOOD_NARRATION])
     result = narrate(provider, chronicle, child, event)
-    assert result.name == "Heavyframe Hunter"
+    assert result.name == "Heavyframe Walker"
     assert len(provider.prompts) == 2
     assert provider.prompts[1].startswith(provider.prompts[0])
     assert "rejected" in provider.prompts[1]

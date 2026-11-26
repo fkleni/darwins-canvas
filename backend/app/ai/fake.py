@@ -1,10 +1,8 @@
-"""Scripted stand-ins for the real models, used in tests."""
+"""A scripted stand-in for a real language model, used in tests."""
 
 from pydantic import BaseModel, ValidationError
 
-from app.ai.image_cache import GeneratedImage
 from app.ai.provider import LLMInvalidOutputError
-from app.ai.safety import ImageVerdict
 
 
 class FakeProvider:
@@ -29,20 +27,3 @@ class FakeProvider:
             return schema.model_validate(response)
         except ValidationError as error:
             raise LLMInvalidOutputError(str(error)) from error
-
-
-class FakeInspector:
-    """Plays back prepared verdicts, in order, and remembers every picture it was shown."""
-
-    def __init__(self, verdicts: list[ImageVerdict | Exception]):
-        self._verdicts = list(verdicts)
-        self.inspected: list[GeneratedImage] = []
-
-    def inspect(self, image: GeneratedImage) -> ImageVerdict:
-        self.inspected.append(image)
-        if not self._verdicts:
-            raise AssertionError("FakeInspector ran out of scripted verdicts")
-        verdict = self._verdicts.pop(0)
-        if isinstance(verdict, Exception):
-            raise verdict
-        return verdict

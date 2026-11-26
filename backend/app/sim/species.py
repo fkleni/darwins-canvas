@@ -14,7 +14,6 @@ class Species(BaseModel):
     body_size: int = Field(ge=1, le=5)
     appearance: Appearance
     base_traits: tuple[str, ...] = ()
-    visual_description: str = ""
 
     def founder(self) -> Creature:
         """The root of a lineage: depth 0, perfectly tuned to the starting planet."""
@@ -33,25 +32,21 @@ SPECIES = {
     s.id: s
     for s in [
         Species(
-            id="gray_wolf",
-            name="Gray Wolf",
+            id="human",
+            name="Human",
             body_size=4,
             appearance=Appearance(
-                skin_color="slate", eye_color="amber", eye_size="medium", pattern="none"
+                skin_color="tan", eye_color="brown", eye_size="medium", pattern="none"
             ),
             base_traits=(
-                "four-legged running stance",
-                "keen sense of smell",
-                "thick double-layered fur",
-                "strong jaws and sharp teeth",
-            ),
-            visual_description=(
-                "an adult gray wolf standing alert on all fours, long legs, "
-                "lean athletic build, seen from the side"
+                "upright bipedal posture",
+                "large complex brain",
+                "dexterous grasping hands",
+                "mostly hairless skin",
             ),
         ),
     ]
 }
 
-DEFAULT_SPECIES_ID = "gray_wolf"
+DEFAULT_SPECIES_ID = "human"
 DEFAULT_SPECIES = SPECIES[DEFAULT_SPECIES_ID]
