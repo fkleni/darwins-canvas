@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image, ImageOps
 
 CARD_SIZE = 768  # pixels; the card shows the picture much smaller than this
-WEBP_QUALITY = 82  # 0-100: higher is sharper and heavier
+WEBP_QUALITY = 90  # 0-100: higher is sharper and heavier
 
 
 def optimize_picture(

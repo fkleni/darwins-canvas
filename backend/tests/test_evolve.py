@@ -68,3 +68,10 @@ def test_a_child_records_its_mutation_and_the_root_has_none():
     child = evolve(root, EVENTS["heavy_gravity"], random.Random(0))
     assert root.mutation is None
     assert child.mutation is not None
+
+
+def test_a_child_records_which_world_parameters_its_event_changed():
+    root = founder()
+    child = evolve(root, EVENTS["heatwave"], random.Random(0))
+    assert root.changed == ()
+    assert child.changed == ("temperature", "water")

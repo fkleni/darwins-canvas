@@ -5,8 +5,6 @@ from enum import StrEnum
 from pydantic import BaseModel, Field
 
 from app.sim import config
-
-from app.sim import config
 from app.sim.appearance import Appearance, Mutation
 
 
@@ -43,3 +41,4 @@ class Creature(BaseModel):
     score: float | None = Field(default=None, ge=0, le=100)  # None for the base species
     status: Status = Status.ALIVE
     mutation: Mutation | None = None  # what changed from the parent, None for the base species
+    changed: tuple[str, ...] = ()  # world parameters changed by the event that created it

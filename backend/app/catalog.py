@@ -87,11 +87,11 @@ class FormCatalog:
         return Form(key=key, description=self._descriptions[key], image=picture)
 
     def resolve(self, creature: Creature) -> Form:
-        """The best available picture for a creature."""
+        """The best available picture for a creature, favouring what its latest event changed."""
         if creature.status == Status.EXTINCT:
             keys = [EXTINCT_KEY, BASE_KEY]
         else:
-            keys = form_keys(creature.adapted_to)
+            keys = form_keys(creature.adapted_to, creature.changed)
         for key in keys:
             form = self.find(key)
             if form is not None:

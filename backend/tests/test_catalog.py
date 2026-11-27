@@ -20,10 +20,10 @@ def make_folder(tmp_path, descriptions, pictures):
     return tmp_path
 
 
-def creature(**adapted_changes):
+def creature(changed=(), **adapted_changes):
     founder = DEFAULT_SPECIES.founder()
     adapted = WorldState.baseline().model_copy(update=adapted_changes)
-    return founder.model_copy(update={"adapted_to": adapted})
+    return founder.model_copy(update={"adapted_to": adapted, "changed": changed})
 
 
 def full_folder(tmp_path, pictures):
@@ -93,6 +93,21 @@ def test_without_the_pair_the_strongest_single_wins(tmp_path):
 def test_without_any_matching_picture_the_base_is_used(tmp_path):
     catalog = FormCatalog.load(full_folder(tmp_path, ["base.jpg"]))
     assert catalog.resolve(creature(gravity=1.6, temperature=7.0)).key == "base"
+
+
+def test_the_latest_event_decides_between_singles_when_the_pair_is_missing(tmp_path):
+    catalog = FormCatalog.load(full_folder(tmp_path, ["base.jpg", "gravity_up.jpg", "temperature_down.jpg"]))
+    recent = creature(gravity=1.6, temperature=-1.0, changed=("gravity",))
+    older = creature(gravity=1.6, temperature=-1.0)
+    assert catalog.resolve(recent).key == "gravity_up"
+    assert catalog.resolve(older).key == "temperature_down"
+
+
+def test_the_pair_picture_still_wins_when_it_exists(tmp_path):
+    names = ["base.jpg", "gravity_up.jpg", "temperature_down.jpg", "gravity_up__temperature_down.jpg"]
+    catalog = FormCatalog.load(full_folder(tmp_path, names))
+    recent = creature(gravity=1.6, temperature=-1.0, changed=("gravity",))
+    assert catalog.resolve(recent).key == "gravity_up__temperature_down"
 
 
 def test_an_extinct_creature_gets_the_extinct_picture(tmp_path):

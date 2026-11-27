@@ -39,4 +39,5 @@ def evolve(parent: Creature, event: Event, rng: random.Random | None = None) -> 
         score=final_score,
         status=status,
         mutation=mutation,
+        changed=tuple(event.changes),
     )

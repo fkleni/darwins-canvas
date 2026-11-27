@@ -64,3 +64,4 @@ MUTATION_PRESSURE_CHANCE = 0.6   # chance that an event's push decides the mutat
 # baseline: ln(ratio) for ratio parameters, amount / scale for linear ones.
 FORM_THRESHOLD = 0.3
 FORM_MAX_DIRECTIONS = 2          # a picture can show at most two adaptations
+FORM_RECENT_BOOST = 2.0          # adaptations to the latest event count this many times over
