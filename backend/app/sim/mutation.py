@@ -1,51 +1,62 @@
-"""Small cosmetic changes between a parent and its child."""
+"""Small inner changes between a parent and its child."""
 
 import random
 
 from app.sim import config
-from app.sim.appearance import SKIN_DARKNESS, TRAIT_GRAPHS, Appearance, Mutation, neighbours
 from app.sim.events import Event
+from app.sim.physiology import MAX_LEVEL, TRAITS, Mutation, Physiology
+
+# How the body answers an environmental push: (parameter, direction) -> (trait, step).
+RESPONSES = {
+    ("gravity", "up"): ("bone_density", +1),
+    ("gravity", "down"): ("bone_density", -1),
+    ("radiation", "up"): ("cellular_repair", +1),
+    ("radiation", "down"): ("cellular_repair", -1),
+    ("temperature", "down"): ("metabolic_rate", +1),
+    ("temperature", "up"): ("metabolic_rate", -1),
+    ("oxygen", "down"): ("lung_efficiency", +1),
+    ("oxygen", "up"): ("lung_efficiency", -1),
+    ("water", "down"): ("water_retention", +1),
+    ("water", "up"): ("water_retention", -1),
+}
 
 
-def pressure_from_event(event: Event) -> str | None:
-    """Which way an event pushes skin colour: 'darker', 'lighter' or None."""
-    if event.changes.get("radiation", 1.0) > 1.0:
-        return "darker"
-    if event.changes.get("temperature", 0.0) <= -10.0:
-        return "lighter"
-    return None
+def pushes_from_event(event: Event) -> list[tuple[str, int]]:
+    """The (trait, step) pushes an event causes, in config order."""
+    pushes = []
+    for name, spec in config.PARAMETERS.items():
+        if name not in event.changes:
+            continue
+        neutral = 1.0 if spec["kind"] == "ratio" else 0.0
+        value = event.changes[name]
+        if abs(value - neutral) < 1e-9:
+            continue
+        pushes.append(RESPONSES[(name, "up" if value > neutral else "down")])
+    return pushes
 
 
-def _pressured_choice(appearance: Appearance, pressure: str, rng: random.Random) -> str | None:
-    """A neighbouring skin colour in the pushed direction, or None if there is none."""
-    current = SKIN_DARKNESS[appearance.skin_color]
-    candidates = neighbours("skin_color", appearance.skin_color)
-    if pressure == "darker":
-        options = [value for value in candidates if SKIN_DARKNESS[value] > current]
-    else:
-        options = [value for value in candidates if SKIN_DARKNESS[value] < current]
-    return rng.choice(options) if options else None
+def _can_move(physiology: Physiology, trait: str, step: int) -> bool:
+    return 0 <= getattr(physiology, trait) + step <= MAX_LEVEL
 
 
 def _apply(
-    appearance: Appearance, trait: str, new_value: str, adaptive: bool
-) -> tuple[Appearance, Mutation]:
-    """Build the changed copy of an appearance, plus the record of what changed."""
-    old_value = getattr(appearance, trait)
-    changed = appearance.model_copy(update={trait: new_value})
-    return changed, Mutation(trait=trait, old=old_value, new=new_value, adaptive=adaptive)
+    physiology: Physiology, trait: str, step: int, adaptive: bool
+) -> tuple[Physiology, Mutation]:
+    """Build the changed copy, plus the record of what changed."""
+    old = getattr(physiology, trait)
+    changed = physiology.model_copy(update={trait: old + step})
+    return changed, Mutation(trait=trait, old=old, new=old + step, adaptive=adaptive)
 
 
 def mutate(
-    appearance: Appearance, event: Event, rng: random.Random
-) -> tuple[Appearance, Mutation]:
-    """Change exactly one trait by exactly one step."""
-    pressure = pressure_from_event(event)
-    if pressure is not None and rng.random() < config.MUTATION_PRESSURE_CHANCE:
-        new_color = _pressured_choice(appearance, pressure, rng)
-        if new_color is not None:
-            return _apply(appearance, "skin_color", new_color, adaptive=True)
+    physiology: Physiology, event: Event, rng: random.Random
+) -> tuple[Physiology, Mutation]:
+    """Change exactly one inner trait by exactly one step."""
+    pushes = [(t, s) for t, s in pushes_from_event(event) if _can_move(physiology, t, s)]
+    if pushes and rng.random() < config.MUTATION_PRESSURE_CHANCE:
+        trait, step = rng.choice(pushes)
+        return _apply(physiology, trait, step, adaptive=True)
 
-    trait = rng.choice(sorted(TRAIT_GRAPHS))
-    new_value = rng.choice(neighbours(trait, getattr(appearance, trait)))
-    return _apply(appearance, trait, new_value, adaptive=False)
+    movable = [(t, s) for t in TRAITS for s in (-1, 1) if _can_move(physiology, t, s)]
+    trait, step = rng.choice(movable)
+    return _apply(physiology, trait, step, adaptive=False)

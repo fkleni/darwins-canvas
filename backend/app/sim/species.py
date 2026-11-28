@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field
 
-from app.sim.appearance import Appearance
+from app.sim.physiology import Physiology
 from app.sim.models import Creature, WorldState
 
 
@@ -12,7 +12,7 @@ class Species(BaseModel):
     id: str
     name: str
     body_size: int = Field(ge=1, le=5)
-    appearance: Appearance
+    physiology: Physiology = Field(default_factory=Physiology)
     base_traits: tuple[str, ...] = ()
 
     def founder(self) -> Creature:
@@ -22,7 +22,7 @@ class Species(BaseModel):
             name=self.name,
             depth=0,
             body_size=self.body_size,
-            appearance=self.appearance,
+            physiology=self.physiology,
             world=world,
             adapted_to=world.model_copy(),
         )
@@ -35,9 +35,6 @@ SPECIES = {
             id="human",
             name="Human",
             body_size=4,
-            appearance=Appearance(
-                skin_color="tan", eye_color="brown", eye_size="medium", pattern="none"
-            ),
             base_traits=(
                 "upright bipedal posture",
                 "large complex brain",

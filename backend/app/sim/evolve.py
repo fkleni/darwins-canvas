@@ -27,13 +27,13 @@ def evolve(parent: Creature, event: Event, rng: random.Random | None = None) -> 
     adapted_to = adapt(world, parent.adapted_to)
     depth = parent.depth + 1
     final_score, status = assess(world, adapted_to, parent.body_size, depth)
-    appearance, mutation = mutate(parent.appearance, event, rng)
+    physiology, mutation = mutate(parent.physiology, event, rng)
 
     return Creature(
         name="Unnamed descendant",
         depth=depth,
         body_size=parent.body_size,
-        appearance=appearance,
+        physiology=physiology,
         world=world,
         adapted_to=adapted_to,
         score=final_score,

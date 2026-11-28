@@ -4,7 +4,8 @@ import pytest
 
 from app.ai.fake import FakeProvider
 from app.ai.lineage import founder_chronicle, history_text
-from app.ai.narrator import build_narration_prompt, narrate
+from app.ai.narrator import build_narration_prompt, describe_mutation, narrate
+from app.sim.physiology import Mutation
 from app.catalog import Form
 from app.sim.events import EVENTS, Event
 from app.sim.evolve import evolve
@@ -147,3 +148,16 @@ def test_narrate_retries_when_the_model_answers_in_the_wrong_shape():
     assert len(provider.prompts) == 2
     assert provider.prompts[1].startswith(provider.prompts[0])
     assert "rejected" in provider.prompts[1]
+
+def test_the_prompt_states_the_inner_mutation_and_that_it_is_invisible():
+    chronicle, child, event = make_case()
+    prompt = build_narration_prompt(chronicle, child, event, FORM)
+    assert describe_mutation(child.mutation) in prompt
+    assert "invisible" in prompt
+
+
+def test_the_mutation_line_names_the_trait_the_levels_and_the_cause():
+    rose = Mutation(trait="bone_density", old=2, new=3, adaptive=True)
+    fell = Mutation(trait="night_vision", old=2, new=1, adaptive=False)
+    assert describe_mutation(rose) == "bone density rose from average to high (driven by the event)"
+    assert describe_mutation(fell) == "night vision fell from average to low (random drift)"
